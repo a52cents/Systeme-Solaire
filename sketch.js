@@ -1,13 +1,18 @@
 let sun;
 let planets = [];
+let stars = [];
+let starSpeed = 0.1;
 let G = 9.81;
 let numPlanets = 5
 let stabilité = 0.5
 let play = false;
-
 let planetPosition
+
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(windowWidth-12, windowHeight-45);
+  console.log(windowHeight ,windowWidth)
+  createStars();
+
   sun = new Body(100, createVector(0, 0), createVector(0, 0));
  
 
@@ -32,29 +37,53 @@ function createPlanets(){
   }
 }
 
+function createStars() {
+  for (let i = 0; i < 333; i++) { // Adjust the number of stars if necessary
+    let x = random(windowWidth);
+    let y = random(windowHeight);
+    let s = random(0.5, 2.5); // Random size between 0.5 and 2.5
+    stars.push({ x, y, s });
+  }
+}
+function drawStars() {
+  noStroke();
+  fill(255, 255, 255);
+  for (let star of stars) {
+    ellipse(star.x, star.y, star.s, star.s);
+
+    // Update star position
+    star.x += starSpeed;
+    star.y += starSpeed;
+
+    // Wrap around the edges
+    if (star.x > windowWidth - 12) star.x = 0;
+    if (star.y > windowHeight - 45) star.y = 0;
+  }
+}
 
 function setPlay(){
   play = !play
+  console.log(stars)
 }
 function reset(){
 planets = [];
 createPlanets();
 }
 function draw() {
+  background("#070019");
+  drawStars();
   translate(width / 2, height / 2);
-  background(100);
+
   sun.show();
   if(!play){
     return
   }else{
-    
   for (let i = 0; i < planets.length; i++) {
     planets[i].show();
     planets[i].update();
     sun.attract(planets[i]);
   }
   }
-  
 }
 
 function Body(mass, pos, vel) {
@@ -73,7 +102,15 @@ function Body(mass, pos, vel) {
     let colorRatio = constrain(speed / maxSpeed, 0, 1);
     let red = lerp(255, 0, colorRatio);
     let green = lerp(0, 255, colorRatio);
-
+ if (this === sun) {
+      // Draw the glowing effect for the sun
+      for (let i = 10; i > 0; i--) {
+        let alpha = map(i, 4, 0, 30, 255);
+        noStroke();
+        fill(255, 25, 20, alpha); // Yellow color with varying opacity
+        ellipse(this.pos.x, this.pos.y, this.r + i * 10, this.r + i * 10);
+      }
+    }
     noStroke();
     fill(red, green, 0);
     ellipse(this.pos.x, this.pos.y, this.r, this.r);
