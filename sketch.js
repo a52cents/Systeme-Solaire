@@ -3,45 +3,38 @@ let planets = [];
 let stars = [];
 let starSpeed = 0.1;
 let G = 9.81;
-let numPlanets = 5
-let stabilité = 0.5
+let numPlanets = 5;
+let stabilité = 0.5;
 let play = false;
-let planetPosition
+let planetPosition;
 
 function setup() {
-  createCanvas(windowWidth-12, windowHeight-45);
-  console.log(windowHeight ,windowWidth)
+  createCanvas(windowWidth - 12, windowHeight - 45);
   createStars();
-
   sun = new Body(100, createVector(0, 0), createVector(0, 0));
- 
-
   createPlanets();
- 
 }
 
-
-function createPlanets(){
+function createPlanets() {
   for (let i = 0; i < numPlanets; i++) {
     //*planet position
     let r = random(sun.r, min(windowWidth / 2, windowHeight / 2));
     let theta = random(TWO_PI);
     let planetPos = createVector(r * cos(theta), r * sin(theta));
-
     //*planet velocity
     let planetVel = planetPos.copy();
     planetVel.rotate(HALF_PI);
     planetVel.setMag(sqrt((G * sun.mass) / planetPos.mag()));
-    planetVel.mult(random(1- stabilité, 1 + stabilité))
-    planets.push(new Body(random(5,30), planetPos, planetVel));
+    planetVel.mult(random(1 - stabilité, 1 + stabilité));
+    planets.push(new Body(random(5, 30), planetPos, planetVel));
   }
 }
 
 function createStars() {
-  for (let i = 0; i < 333; i++) { // Adjust the number of stars if necessary
+  for (let i = 0; i < 333; i++) {
     let x = random(windowWidth);
     let y = random(windowHeight);
-    let s = random(0.5, 2.5); // Random size between 0.5 and 2.5
+    let s = random(0.5, 2.5);
     stars.push({ x, y, s });
   }
 }
@@ -50,39 +43,28 @@ function drawStars() {
   fill(255, 255, 255);
   for (let star of stars) {
     ellipse(star.x, star.y, star.s, star.s);
-
-    // Update star position
     star.x += starSpeed;
     star.y += starSpeed;
-
-    // Wrap around the edges
+    //* Bords
     if (star.x > windowWidth - 12) star.x = 0;
     if (star.y > windowHeight - 45) star.y = 0;
   }
 }
 
-function setPlay(){
-  play = !play
-  console.log(stars)
-}
-function reset(){
-planets = [];
-createPlanets();
-}
 function draw() {
   background("#070019");
   drawStars();
   translate(width / 2, height / 2);
 
   sun.show();
-  if(!play){
-    return
-  }else{
-  for (let i = 0; i < planets.length; i++) {
-    planets[i].show();
-    planets[i].update();
-    sun.attract(planets[i]);
-  }
+  if (!play) {
+    return;
+  } else {
+    for (let i = 0; i < planets.length; i++) {
+      planets[i].show();
+      planets[i].update();
+      sun.attract(planets[i]);
+    }
   }
 }
 
@@ -94,20 +76,18 @@ function Body(mass, pos, vel) {
   this.path = [];
 
   this.show = function () {
-    // Calculate the speed of the planet
+    //* vitesse de la planete
     let speed = this.vel.mag();
-
-    // Map the speed to a color between red and green
-    let maxSpeed = 5; // You might need to adjust this value based on your system
+    let maxSpeed = 5;
     let colorRatio = constrain(speed / maxSpeed, 0, 1);
     let red = lerp(255, 0, colorRatio);
     let green = lerp(0, 255, colorRatio);
- if (this === sun) {
-      // Draw the glowing effect for the sun
+    if (this === sun) {
+      //* Sun effect
       for (let i = 10; i > 0; i--) {
         let alpha = map(i, 4, 0, 30, 255);
         noStroke();
-        fill(255, 25, 20, alpha); // Yellow color with varying opacity
+        fill(255, 25, 20, alpha);
         ellipse(this.pos.x, this.pos.y, this.r + i * 10, this.r + i * 10);
       }
     }
@@ -117,7 +97,12 @@ function Body(mass, pos, vel) {
 
     stroke(30);
     for (let i = 0; i < this.path.length - 2; i++) {
-        line(this.path[i].x, this.path[i].y, this.path[i + 1].x, this.path[i + 1].y);
+      line(
+        this.path[i].x,
+        this.path[i].y,
+        this.path[i + 1].x,
+        this.path[i + 1].y
+      );
     }
   };
 
@@ -126,7 +111,7 @@ function Body(mass, pos, vel) {
     this.pos.y += this.vel.y;
     this.path.push(this.pos.copy());
     if (this.path.length > 206) {
-        this.path.splice(0, 1);
+      this.path.splice(0, 1);
     }
   };
 
@@ -141,4 +126,13 @@ function Body(mass, pos, vel) {
     f.setMag((G * this.mass * child.mass) / (r * r));
     child.applyForce(f);
   };
+}
+
+//*Autres fonctions
+function setPlay() {
+  play = !play;
+}
+function reset() {
+  planets = [];
+  createPlanets();
 }
